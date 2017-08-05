@@ -2,7 +2,7 @@ var Color = require('color')
 var earstream = require('earstream')
 
 var TAU = 2 * Math.PI
-var N_POINTS = 120
+var N_POINTS = 20
 var PALETTE = ['#E86AFF', '#8A65E8', '#658EFF', '#65CEE8', '#80FFD1']
   .map((hex) => Color(hex))
 
@@ -21,15 +21,11 @@ points.forEach(function (point) {
 })
 
 var cycleDuration = 10000
+var rotationDuration = 10000
 
 es.on('data', function (data) {
+  var rotation = TAU * (Date.now() / rotationDuration)
   var p = (Date.now() % cycleDuration) / cycleDuration
-  var iPalette = p * PALETTE.length
-  var colorStart = PALETTE[Math.floor(iPalette)]
-  var colorEnd = PALETTE[Math.ceil(iPalette) % PALETTE.length]
-
-  var pColor = iPalette - Math.floor(iPalette)
-  var baseColor = colorStart.mix(colorEnd, pColor)
 
   data.norm.forEach(function (v, i) {
     var pointSiblings = [
@@ -37,7 +33,12 @@ es.on('data', function (data) {
       points[(N_POINTS * 2) - (i + 1)]
     ]
 
-    var rotation = TAU * (Date.now() / 10000)
+    var iPalette = ((i / N_POINTS) + p) % 1 * PALETTE.length
+    var colorStart = PALETTE[Math.floor(iPalette)]
+    var colorEnd = PALETTE[Math.ceil(iPalette) % PALETTE.length]
+
+    var pColor = iPalette - Math.floor(iPalette)
+    var baseColor = colorStart.mix(colorEnd, pColor)
 
     pointSiblings.forEach(function (point) {
       var colorString = baseColor.mix(bgColor, 1 - v).round().string()
