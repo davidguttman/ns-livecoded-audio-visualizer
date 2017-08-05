@@ -3,6 +3,8 @@ var earstream = require('earstream')
 
 var TAU = 2 * Math.PI
 var N_POINTS = 120
+var PALETTE = ['#E86AFF', '#8A65E8', '#658EFF', '#65CEE8', '#80FFD1']
+  .map((hex) => Color(hex))
 
 var xOrigin = window.innerWidth / 2
 var yOrigin = window.innerHeight / 2
@@ -10,13 +12,25 @@ var yOrigin = window.innerHeight / 2
 var es = earstream(N_POINTS)
 var points = createPoints(2 * N_POINTS)
 
+var bgColor = Color.rgb(22, 22, 22)
+
 document.body.style.background = '#222'
 
 points.forEach(function (point) {
   document.body.appendChild(point.el)
 })
 
+var cycleDuration = 10000
+
 es.on('data', function (data) {
+  var p = (Date.now() % cycleDuration) / cycleDuration
+  var iPalette = p * PALETTE.length
+  var colorStart = PALETTE[Math.floor(iPalette)]
+  var colorEnd = PALETTE[Math.ceil(iPalette) % PALETTE.length]
+
+  var pColor = iPalette - Math.floor(iPalette)
+  var baseColor = colorStart.mix(colorEnd, pColor)
+
   data.norm.forEach(function (v, i) {
     var pointSiblings = [
       points[i],
@@ -26,14 +40,10 @@ es.on('data', function (data) {
     var rotation = TAU * (Date.now() / 10000)
 
     pointSiblings.forEach(function (point) {
-      var colorString = Color.rgb(
-        34 + v * 255,
-        34 + v * 255,
-        34 + v * 255
-      ).round().string()
+      var colorString = baseColor.mix(bgColor, 1 - v).round().string()
 
       point
-        .setSize(v * 70)
+        .setSize(v * 30)
         .setColor(colorString)
         .setPosition(rotation + point.theta, v * yOrigin)
     })
@@ -42,22 +52,18 @@ es.on('data', function (data) {
 
 function createPoints (nPoints) {
   return new Array(nPoints).fill(0).map(function (item, i) {
-    var theta = (i / nPoints) * TAU
-    var radius = 0
+    var el = document.createElement('div')
+    el.style.position = 'absolute'
+    el.style.borderRadius = '50%'
 
     var point = {
-      el: document.createElement('div'),
-      theta: theta,
-      radius: radius,
+      el: el,
+      theta: (i / nPoints) * TAU,
+      radius: 0,
       setSize: setSize,
       setColor: setPointColor,
       setPosition: setPointPosition
     }
-
-    point.el.style.position = 'absolute'
-    point.el.style.borderRadius = '50%'
-
-    point.setPosition(theta, radius)
 
     return point
   })
