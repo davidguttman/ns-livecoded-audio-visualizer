@@ -1,0 +1,20 @@
+{
+  "name": "nodeschool-livecoding",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "budo index.js --live"
+  },
+  "keywords": [],
+  "author": "David Guttman <david@guttman.io> (http://davidguttman.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "budo": "^10.0.4",
+    "standard": "^10.0.2"
+  },
+  "dependencies": {
+    "color": "^2.0.0",
+    "earstream": "^1.1.3"
+  }
+}
